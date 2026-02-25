@@ -2,6 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+
+
+
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -57,7 +61,7 @@ model doc {
   dia                                  String?       @db.VarChar
   assunto                              String?       @db.VarChar
   conteudo                             String?       @db.VarChar
-  codigo  db.VarChar
+  codigo                               String?       @db.VarChar
   pasta                                String?       @db.VarChar
   de_usuario_id                        String?       @db.VarChar
   de_setor_id                          String?       @db.VarChar
@@ -285,5 +289,3 @@ model doc_assunto {
   assunto    assunto? @relation(fields: [id_assunto], references: [id], onDelete: NoAction, onUpdate: NoAction)
   doc        doc?     @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
-
-

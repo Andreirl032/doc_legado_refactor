@@ -25,10 +25,10 @@ import { toast } from "sonner";
 
 const navItems = [
   { href: "/dashboard", label: "Painel", icon: LayoutDashboard },
-  { href: "/dashboard/processos", label: "Números Processo", icon: FileText},
-  { href: "/dashboard/Ano", label: "Ano", icon: FileText },
-  { href: "/dashboard/Fluxo", label: "Fluxo", icon: FileText },
-  { href: "/dashboard/Assunto", label: "Assunto", icon: FileText },
+  { href: "/dashboard/processos", label: "Processos", icon: FileText},
+  // { href: "/dashboard/Ano", label: "Ano", icon: FileText },
+  // { href: "/dashboard/Fluxo", label: "Fluxo", icon: FileText },
+  // { href: "/dashboard/Assunto", label: "Assunto", icon: FileText },
 ];
 
 type User = {
