@@ -1,0 +1,284 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model assunto {
+  id          String        @id @db.VarChar
+  assunto     String?       @db.VarChar
+  descricao   String?       @db.VarChar
+  id_fluxo    String?       @db.VarChar
+  fluxo       fluxo?        @relation(fields: [id_fluxo], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  doc_assunto doc_assunto[]
+}
+
+model contato {
+  id                                     String       @id @db.VarChar
+  nome                                   String?      @db.VarChar
+  razao_social                           String?      @db.VarChar
+  email                                  String?      @db.VarChar
+  tipo_pessoa                            String?      @db.VarChar
+  cpf_cnpj                               String?      @db.VarChar
+  ddd                                    String?      @db.VarChar
+  telefone                               String?      @db.VarChar
+  ddd_celular                            String?      @db.VarChar
+  celular                                String?      @db.VarChar
+  data_nasc                              String?      @db.VarChar
+  data_cadastro                          String?      @db.VarChar
+  hora_cadastro                          String?      @db.VarChar
+  status                                 String?      @db.VarChar
+  contato                                String?      @db.VarChar
+  organizacao                            String?      @db.VarChar
+  funcao                                 String?      @db.VarChar
+  endereco                               String?      @db.VarChar
+  numero                                 String?      @db.VarChar
+  complemento                            String?      @db.VarChar
+  cep                                    String?      @db.VarChar
+  bairro                                 String?      @db.VarChar
+  cidade                                 String?      @db.VarChar
+  uf                                     String?      @db.VarChar
+  assinatura                             assinatura[]
+  doc_doc_de_contato_idTocontato         doc[]        @relation("doc_de_contato_idTocontato")
+  doc_doc_para_contato_idTocontato       doc[]        @relation("doc_para_contato_idTocontato")
+  subdoc_subdoc_de_contato_idTocontato   subdoc[]     @relation("subdoc_de_contato_idTocontato")
+  subdoc_subdoc_para_contato_idTocontato subdoc[]     @relation("subdoc_para_contato_idTocontato")
+}
+
+model doc {
+  id                                   String        @id @db.VarChar
+  id_fluxo                             String?       @db.VarChar
+  num                                  String?       @db.VarChar
+  ano                                  String?       @db.VarChar
+  mes                                  String?       @db.VarChar
+  dia                                  String?       @db.VarChar
+  assunto                              String?       @db.VarChar
+  conteudo                             String?       @db.VarChar
+  codigo                               String?       @db.VarChar
+  pasta                                String?       @db.VarChar
+  de_usuario_id                        String?       @db.VarChar
+  de_setor_id                          String?       @db.VarChar
+  de_contato_id                        String?       @db.VarChar
+  para_contato_id                      String?       @db.VarChar
+  data                                 String?       @db.VarChar
+  hora                                 String?       @db.VarChar
+  data_hora_recebimento_gmt            String?       @db.VarChar
+  prioridade                           String?       @db.VarChar
+  ano_documento                        String?       @db.VarChar
+  para_setor_id                        String?       @db.VarChar
+  para_usuario_id                      String?       @db.VarChar
+  anexo                                anexo[]
+  assinatura                           assinatura[]
+  contato_doc_de_contato_idTocontato   contato?      @relation("doc_de_contato_idTocontato", fields: [de_contato_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  setor_doc_de_setor_idTosetor         setor?        @relation("doc_de_setor_idTosetor", fields: [de_setor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario_doc_de_usuario_idTousuario   usuario?      @relation("doc_de_usuario_idTousuario", fields: [de_usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fluxo                                fluxo?        @relation(fields: [id_fluxo], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  contato_doc_para_contato_idTocontato contato?      @relation("doc_para_contato_idTocontato", fields: [para_contato_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  setor_doc_para_setor_idTosetor       setor?        @relation("doc_para_setor_idTosetor", fields: [para_setor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario_doc_para_usuario_idTousuario usuario?      @relation("doc_para_usuario_idTousuario", fields: [para_usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  doc_assunto                          doc_assunto[]
+  doc_meta                             doc_meta[]
+  doc_setor                            doc_setor[]
+  subdoc                               subdoc[]
+}
+
+model doc_meta {
+  id_doc String  @db.VarChar
+  meta   String  @db.VarChar
+  valor  String? @db.VarChar
+  doc    doc     @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([id_doc, meta])
+}
+
+model doc_setor {
+  id       String  @id @db.VarChar
+  id_setor String? @db.VarChar
+  id_doc   String? @db.VarChar
+  doc      doc?    @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  setor    setor?  @relation(fields: [id_setor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model fluxo {
+  id      String    @id @db.VarChar
+  fluxo   String?   @db.VarChar
+  grupo   String?   @db.VarChar
+  status  String?   @db.VarChar
+  assunto assunto[]
+  doc     doc[]
+}
+
+model setor {
+  id                                 String          @id @db.VarChar
+  setor                              String?         @db.VarChar
+  sigla                              String?         @db.VarChar
+  status                             String?         @db.VarChar
+  secretaria                         String          @default("DEFAULT")
+  doc_doc_de_setor_idTosetor         doc[]           @relation("doc_de_setor_idTosetor")
+  doc_doc_para_setor_idTosetor       doc[]           @relation("doc_para_setor_idTosetor")
+  doc_setor                          doc_setor[]
+  subdoc_subdoc_de_setor_idTosetor   subdoc[]        @relation("subdoc_de_setor_idTosetor")
+  subdoc_subdoc_para_setor_idTosetor subdoc[]        @relation("subdoc_para_setor_idTosetor")
+  usuario_setor                      usuario_setor[]
+}
+
+model subdoc {
+  id                                      String       @id @db.VarChar
+  id_doc                                  String?      @db.VarChar
+  num                                     String?      @db.VarChar
+  ano_documento                           String?      @db.VarChar
+  ano                                     String?      @db.VarChar
+  mes                                     String?      @db.VarChar
+  dia                                     String?      @db.VarChar
+  conteudo                                String?      @db.VarChar
+  codigo                                  String?      @db.VarChar
+  pasta                                   String?      @db.VarChar
+  de_usuario_id                           String?      @db.VarChar
+  de_setor_id                             String?      @db.VarChar
+  para_usuario_id                         String?      @db.VarChar
+  para_setor_id                           String?      @db.VarChar
+  de_contato_id                           String?      @db.VarChar
+  para_contato_id                         String?      @db.VarChar
+  data                                    String?      @db.VarChar
+  hora                                    String?      @db.VarChar
+  data_hora_recebimento_gmt               String?      @db.VarChar
+  anexo                                   anexo[]
+  assinatura                              assinatura[]
+  contato_subdoc_de_contato_idTocontato   contato?     @relation("subdoc_de_contato_idTocontato", fields: [de_contato_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  setor_subdoc_de_setor_idTosetor         setor?       @relation("subdoc_de_setor_idTosetor", fields: [de_setor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario_subdoc_de_usuario_idTousuario   usuario?     @relation("subdoc_de_usuario_idTousuario", fields: [de_usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  doc                                     doc?         @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  contato_subdoc_para_contato_idTocontato contato?     @relation("subdoc_para_contato_idTocontato", fields: [para_contato_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  setor_subdoc_para_setor_idTosetor       setor?       @relation("subdoc_para_setor_idTosetor", fields: [para_setor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario_subdoc_para_usuario_idTousuario usuario?     @relation("subdoc_para_usuario_idTousuario", fields: [para_usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model usuario {
+  id                                     String          @id @db.VarChar
+  email                                  String?         @db.VarChar
+  nome                                   String?         @db.VarChar
+  status                                 String?         @db.VarChar
+  assinatura                             assinatura[]
+  doc_doc_de_usuario_idTousuario         doc[]           @relation("doc_de_usuario_idTousuario")
+  doc_doc_para_usuario_idTousuario       doc[]           @relation("doc_para_usuario_idTousuario")
+  subdoc_subdoc_de_usuario_idTousuario   subdoc[]        @relation("subdoc_de_usuario_idTousuario")
+  subdoc_subdoc_para_usuario_idTousuario subdoc[]        @relation("subdoc_para_usuario_idTousuario")
+  usuario_setor                          usuario_setor[]
+}
+
+model usuario_setor {
+  id         String   @id @db.VarChar
+  id_usuario String?  @db.VarChar
+  id_setor   String?  @db.VarChar
+  principal  String?  @db.VarChar
+  setor      setor?   @relation(fields: [id_setor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario    usuario? @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  name                   String?
+  email                  String    @unique
+  emailVerified          DateTime?
+  image                  String?
+  password               String?
+  isTwoFactorAuthEnabled Boolean   @default(false)
+  twoFactorAuthVerified  DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  role                   String?   @default("DEFAULT")
+  accounts               Account[]
+  sessions               Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime @db.Timestamp(6)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([userId])
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model TwoFactorToken {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model ResetPasswordToken {
+  id      String   @id @default(cuid())
+  email   String   @unique
+  token   String   @unique
+  expires DateTime
+
+  @@unique([email, token])
+}
+
+model anexo {
+  id_anexo  String  @id @db.VarChar
+  id_subdoc String? @db.VarChar
+  id_doc    String? @db.VarChar
+  anexo     String? @db.VarChar
+  doc       doc?    @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subdoc    subdoc? @relation(fields: [id_subdoc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model assinatura {
+  id               String   @id @db.VarChar
+  id_subdoc        String?  @db.VarChar
+  id_doc           String?  @db.VarChar
+  id_usuario       String?  @db.VarChar
+  id_contato       String?  @db.VarChar
+  data             String?  @db.VarChar
+  hora             String?  @db.VarChar
+  arquivo_assinado String?  @db.VarChar
+  tipo             String?  @db.VarChar
+  contato          contato? @relation(fields: [id_contato], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  doc              doc?     @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subdoc           subdoc?  @relation(fields: [id_subdoc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  usuario          usuario? @relation(fields: [id_usuario], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model doc_assunto {
+  id         String   @id @db.VarChar
+  id_assunto String?  @db.VarChar
+  id_doc     String?  @db.VarChar
+  assunto    assunto? @relation(fields: [id_assunto], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  doc        doc?     @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
