@@ -70,7 +70,9 @@ export default function FluxosPage() {
           <Loader2 className="h-8 w-8 animate-spin text-sidebar-primary" />
         </div>
       ) : (
-       <ProcessTable processos={processos} onViewProcess={handleViewProcess} />
+      //  <ProcessTable processos={process} onViewProcess={handleViewProcess} />
+      <div></div>
+      //Comentado provisoriamente para evitar erro
       )}
 
       {/* Tree Viewer Sheet */}
