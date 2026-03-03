@@ -87,6 +87,8 @@ model doc {
   doc_meta                             doc_meta[]
   doc_setor                            doc_setor[]
   subdoc                               subdoc[]
+
+  @@index([id_fluxo, data(sort: Desc)])
 }
 
 model doc_meta {
@@ -158,6 +160,8 @@ model subdoc {
   contato_subdoc_para_contato_idTocontato contato?     @relation("subdoc_para_contato_idTocontato", fields: [para_contato_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   setor_subdoc_para_setor_idTosetor       setor?       @relation("subdoc_para_setor_idTosetor", fields: [para_setor_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   usuario_subdoc_para_usuario_idTousuario usuario?     @relation("subdoc_para_usuario_idTousuario", fields: [para_usuario_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  @@index([id_doc])
 }
 
 model usuario {
@@ -261,6 +265,8 @@ model anexo {
   anexo     String? @db.VarChar
   doc       doc?    @relation(fields: [id_doc], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subdoc    subdoc? @relation(fields: [id_subdoc], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([id_doc])
 }
 
 model assinatura {

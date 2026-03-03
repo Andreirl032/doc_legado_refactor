@@ -45,12 +45,12 @@ export async function GET(request: Request) {
           setor_doc_de_setor_idTosetor: true,
           setor_doc_para_setor_idTosetor: true,
           usuario_doc_de_usuario_idTousuario: true,
-          _count: {
-            select: {
-              subdoc: true,
-              anexo: true,
-            },
-          },
+          // _count: {
+          //   select: {
+          //     subdoc: true,
+          //     anexo: true,
+          //   },
+          // },
         },
         orderBy: { data: "desc" },
         skip,
@@ -58,6 +58,32 @@ export async function GET(request: Request) {
       }),
       prisma.doc.count({ where }),
     ])
+    const ids = docs.map((d) => d.id)
+    const subdocCounts = await prisma.subdoc.groupBy({
+      by: ["id_doc"],
+      where: {
+        id_doc: { in: ids },
+      },
+      _count: {
+        id_doc: true,
+      },
+    })
+    const anexoCounts = await prisma.anexo.groupBy({
+      by: ["id_doc"],
+      where: {
+        id_doc: { in: ids },
+      },
+      _count: {
+        id_doc: true,
+      },
+    })
+    const subdocMap = new Map(
+      subdocCounts.map((item) => [item.id_doc, item._count.id_doc])
+    )
+
+    const anexoMap = new Map(
+      anexoCounts.map((item) => [item.id_doc, item._count.id_doc])
+    )
 
     // Map to frontend format
     const processos = docs.map((doc) => ({
@@ -71,8 +97,8 @@ export async function GET(request: Request) {
       secretariaOrigemNome: doc.setor_doc_de_setor_idTosetor?.setor || "-",
       interessado: doc.setor_doc_para_setor_idTosetor?.setor || "-",
       criadorNome: doc.usuario_doc_de_usuario_idTousuario?.nome || "-",
-      totalDocumentos: doc._count.subdoc,
-      totalAnexos: doc._count.anexo,
+      totalDocumentos: subdocMap.get(doc.id) || 0,
+      totalAnexos: anexoMap.get(doc.id) || 0,
       conteudo: doc.conteudo || "",
       codigo: doc.codigo || "",
       fluxoNome: doc.fluxo?.fluxo || "",
