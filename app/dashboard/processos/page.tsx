@@ -16,17 +16,17 @@ export default function FluxosPage() {
 
 
   const { data, isLoading } = useSWR(
-  "/api/processos",
-  fetcher,
-  { revalidateOnFocus: false }
-)
+    "/api/processos",
+    fetcher,
+    { revalidateOnFocus: false }
+  )
   const { data: fluxosData } = useSWR(
     "/api/fluxos",
     fetcher
   )
 
   const processos = data?.processos || []
-const total = data?.total || 0
+  const total = data?.total || 0
   const fluxos = fluxosData || []
 
 
@@ -51,7 +51,9 @@ const total = data?.total || 0
     <div className="p-6 lg:p-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-        <span className="hover:text-foreground cursor-pointer transition-colors">Painel</span>
+        <span
+        // className="hover:text-foreground cursor-pointer transition-colors"
+        >Painel</span>
         <span>{">"}</span>
         <span className="text-foreground font-medium">Processos</span>
       </nav>
@@ -76,7 +78,7 @@ const total = data?.total || 0
           <Loader2 className="h-8 w-8 animate-spin text-sidebar-primary" />
         </div>
       ) : (
-         <ProcessTable processos={processos} onViewProcess={handleViewProcess} />
+        <ProcessTable processos={processos} onViewProcess={handleViewProcess} />
       )}
 
       {/* Tree Viewer Sheet */}

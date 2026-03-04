@@ -4,7 +4,7 @@ import { useState, useCallback } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Select,
   SelectContent,
@@ -33,6 +33,7 @@ export interface FilterValues {
 
 export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
   const [showFilters, setShowFilters] = useState(true)
+
   const [filters, setFilters] = useState<FilterValues>({
     numero: "",
     assunto: "",
@@ -41,6 +42,10 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
     status: "",
     tipo: "",
   })
+
+  const [useNumero, setUseNumero] = useState(false)
+  const [useAssunto, setUseAssunto] = useState(false)
+  const [useAno, setUseAno] = useState(false)
 
   const { data: fluxosData } = useSWR("/api/fluxos", fetcher, {
     revalidateOnFocus: false,
@@ -53,8 +58,17 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
   }
 
   const handleSearch = useCallback(() => {
-    onSearch(filters)
-  }, [filters, onSearch])
+    const finalFilters: FilterValues = {
+      numero: useNumero ? filters.numero : "",
+      assunto: useAssunto ? filters.assunto : "",
+      ano: useAno ? filters.ano : "",
+      fluxo: filters.fluxo, // sempre ativo
+      status: filters.status,
+      tipo: filters.tipo,
+    }
+
+    onSearch(finalFilters)
+  }, [filters, onSearch, useNumero, useAssunto, useAno])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") handleSearch()
@@ -76,85 +90,108 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
       </div>
 
       {showFilters && (
-        <div className="rounded-lg border border-border bg-card p-4 space-y-4">
-          {/* Top row: 4 text/select fields */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rounded-lg border border-border/60 bg-card p-4 space-y-4 shadow-sm">
+
+          {/* GRID SUPERIOR */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            {/* Nº Processo */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">N do Processo</Label>
+              <Label className="text-xs font-semibold text-foreground">
+                N do Processo
+              </Label>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full border-2 border-sidebar-primary shrink-0" />
+                <Checkbox
+                  checked={useNumero}
+                  onCheckedChange={(v) => setUseNumero(!!v)}
+                  className="border-white/10"
+                />
                 <Input
                   placeholder="Buscar pelo numero do processo"
                   value={filters.numero}
                   onChange={(e) => handleChange("numero", e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="h-9 bg-input border-border text-sm text-foreground placeholder:text-muted-foreground"
+                  disabled={!useNumero}
+                  className="h-9 bg-input border-white/10 text-sm"
                 />
               </div>
             </div>
 
+            {/* Assunto */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">Assunto</Label>
+              <Label className="text-xs font-semibold text-foreground">
+                Assunto
+              </Label>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full border-2 border-sidebar-primary shrink-0" />
+                <Checkbox
+                  checked={useAssunto}
+                  onCheckedChange={(v) => setUseAssunto(!!v)}
+                  className="border-white/10"
+                />
                 <Input
                   placeholder="Buscar pelo assunto"
                   value={filters.assunto}
                   onChange={(e) => handleChange("assunto", e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="h-9 bg-input border-border text-sm text-foreground placeholder:text-muted-foreground"
+                  disabled={!useAssunto}
+                  className="h-9 bg-input border-white/10 text-sm"
                 />
               </div>
             </div>
 
+            {/* Ano */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">Ano</Label>
+              <Label className="text-xs font-semibold text-foreground">
+                Ano
+              </Label>
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full border-2 border-sidebar-primary shrink-0" />
+                <Checkbox
+                  checked={useAno}
+                  onCheckedChange={(v) => setUseAno(!!v)}
+                  className="border-white/10"
+                />
                 <Input
                   placeholder="Buscar pelo ano"
                   value={filters.ano}
                   onChange={(e) => handleChange("ano", e.target.value)}
                   onKeyDown={handleKeyDown}
-                  className="h-9 bg-input border-border text-sm text-foreground placeholder:text-muted-foreground"
+                  disabled={!useAno}
+                  className="h-9 bg-input border-white/10 text-sm"
                 />
-              </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-foreground">Fluxo</Label>
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full border-2 border-sidebar-primary shrink-0" />
-                <Select
-                  value={filters.fluxo}
-                  onValueChange={(v) => handleChange("fluxo", v)}
-                >
-                  <SelectTrigger className="h-9 bg-input border-border text-sm text-foreground">
-                    <SelectValue placeholder="Selecione uma opcao" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover border-border">
-                    <SelectItem value="all">Todos os Fluxos</SelectItem>
-                    {fluxos.map((f: { id: string; fluxo: string }) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        {f.fluxo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           </div>
 
-          {/* Bottom row: dropdowns + search */}
+          {/* LINHA INFERIOR */}
           <div className="flex flex-wrap items-end gap-3">
+
+            {/* Fluxo */}
+            <Select
+              value={filters.fluxo}
+              onValueChange={(v) => handleChange("fluxo", v)}
+            >
+              <SelectTrigger className="w-[160px] h-9">
+                <SelectValue placeholder="Todos os Fluxos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os Fluxos</SelectItem>
+                {fluxos.map((f: { id: string; fluxo: string }) => (
+                  <SelectItem key={f.id} value={f.id}>
+                    {f.fluxo}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Status */}
             <Select
               value={filters.status}
               onValueChange={(v) => handleChange("status", v)}
             >
-              <SelectTrigger className="w-[160px] h-9 bg-input border-border text-sm text-foreground">
+              <SelectTrigger className="w-[160px] h-9">
                 <SelectValue placeholder="Todos os Status" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border">
+              <SelectContent>
                 <SelectItem value="all">Todos os Status</SelectItem>
                 <SelectItem value="em_andamento">Em Andamento</SelectItem>
                 <SelectItem value="concluido">Concluido</SelectItem>
@@ -163,14 +200,15 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
               </SelectContent>
             </Select>
 
+            {/* Tipo */}
             <Select
               value={filters.tipo}
               onValueChange={(v) => handleChange("tipo", v)}
             >
-              <SelectTrigger className="w-[160px] h-9 bg-input border-border text-sm text-foreground">
+              <SelectTrigger className="w-[160px] h-9">
                 <SelectValue placeholder="Todos os Tipos" />
               </SelectTrigger>
-              <SelectContent className="bg-popover border-border">
+              <SelectContent>
                 <SelectItem value="all">Todos os Tipos</SelectItem>
                 <SelectItem value="oficio">Oficio</SelectItem>
                 <SelectItem value="memorando">Memorando</SelectItem>
@@ -187,7 +225,7 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
               <Button
                 onClick={handleSearch}
                 disabled={loading}
-                className="h-9 gap-2 bg-sidebar-primary hover:bg-sidebar-primary/90 text-sidebar-primary-foreground text-sm font-semibold px-5"
+                className="h-9 gap-2 px-5"
               >
                 {loading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
