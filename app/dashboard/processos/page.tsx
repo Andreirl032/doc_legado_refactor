@@ -13,10 +13,11 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 export default function FluxosPage() {
   const [selectedProcessoId, setSelectedProcessoId] = useState<string | null>(null)
   const [viewerOpen, setViewerOpen] = useState(false)
+  const [url, setUrl] = useState("/api/processos")
 
 
   const { data, isLoading } = useSWR(
-    "/api/processos",
+    url,
     fetcher,
     { revalidateOnFocus: false }
   )
@@ -30,15 +31,18 @@ export default function FluxosPage() {
   const fluxos = fluxosData || []
 
 
-  const handleSearch = useCallback((filters: FilterValues) => {
-    const params = new URLSearchParams()
-    if (filters.numero) params.set("numero", filters.numero)
-    if (filters.assunto) params.set("assunto", filters.assunto)
-    if (filters.ano) params.set("ano", filters.ano)
-    if (filters.fluxo && filters.fluxo !== "all") params.set("fluxo", filters.fluxo)
-    if (filters.status && filters.status !== "all") params.set("status", filters.status)
-    if (filters.tipo && filters.tipo !== "all") params.set("tipo", filters.tipo)
-  }, [])
+const handleSearch = useCallback((filters: FilterValues) => {
+  const params = new URLSearchParams()
+
+  if (filters.numero) params.set("numero", filters.numero)
+  if (filters.assunto) params.set("assunto", filters.assunto)
+  if (filters.ano) params.set("ano", filters.ano)
+  if (filters.fluxo && filters.fluxo !== "all") params.set("fluxo", filters.fluxo)
+
+  const queryString = params.toString()
+
+  setUrl(`/api/processos${queryString ? `?${queryString}` : ""}`)
+}, [])
 
 
 

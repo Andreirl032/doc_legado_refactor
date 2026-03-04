@@ -24,7 +24,20 @@ export async function GET(request: Request) {
     const where: Record<string, unknown> = {}
 
     if (numero) {
-      where.num = { contains: numero, mode: "insensitive" }
+      const parts = numero.split(".")
+
+      if (parts.length === 3) {
+        const [anoBusca, mesBusca, numBusca] = parts
+
+        where.AND = [
+          { ano: anoBusca },
+          { mes: mesBusca },
+          { num: numBusca },
+        ]
+      } else {
+        // Se digitou só parte do número (ex: 23905)
+        where.num = { contains: numero, mode: "insensitive" }
+      }
     }
     if (assunto) {
       where.assunto = { contains: assunto, mode: "insensitive" }
@@ -35,7 +48,7 @@ export async function GET(request: Request) {
     if (fluxoId) {
       where.id_fluxo = fluxoId
     }
-
+    
     // Fetch docs with relations
     const [docs, total] = await Promise.all([
       prisma.doc.findMany({

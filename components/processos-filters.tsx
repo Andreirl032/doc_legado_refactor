@@ -170,7 +170,7 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
               value={filters.fluxo}
               onValueChange={(v) => handleChange("fluxo", v)}
             >
-              <SelectTrigger className="w-[160px] h-9">
+              <SelectTrigger className="w-[160px] h-9 border-white/10">
                 <SelectValue placeholder="Todos os Fluxos" />
               </SelectTrigger>
               <SelectContent>
@@ -184,11 +184,11 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
             </Select>
 
             {/* Status */}
-            <Select
+            {/* <Select
               value={filters.status}
               onValueChange={(v) => handleChange("status", v)}
             >
-              <SelectTrigger className="w-[160px] h-9">
+              <SelectTrigger className="w-[160px] h-9 border-white/10">
                 <SelectValue placeholder="Todos os Status" />
               </SelectTrigger>
               <SelectContent>
@@ -198,14 +198,14 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
                 <SelectItem value="pendente">Pendente</SelectItem>
                 <SelectItem value="arquivado">Arquivado</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
 
             {/* Tipo */}
-            <Select
+            {/* <Select
               value={filters.tipo}
               onValueChange={(v) => handleChange("tipo", v)}
             >
-              <SelectTrigger className="w-[160px] h-9">
+              <SelectTrigger className="w-[160px] h-9 border-white/10">
                 <SelectValue placeholder="Todos os Tipos" />
               </SelectTrigger>
               <SelectContent>
@@ -219,7 +219,7 @@ export function ProcessosFilters({ onSearch, loading }: ProcessosFiltersProps) {
                 <SelectItem value="despacho">Despacho</SelectItem>
                 <SelectItem value="decreto">Decreto</SelectItem>
               </SelectContent>
-            </Select>
+            </Select> */}
 
             <div className="ml-auto">
               <Button
