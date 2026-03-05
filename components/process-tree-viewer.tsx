@@ -145,102 +145,92 @@ async function generatePdf(title: string, content: string) {
 
 async function generateProcessoPdf(tree: ProcessoTree) {
   const { jsPDF } = await import("jspdf")
-  const doc = new jsPDF()
-  const pageWidth = doc.internal.pageSize.getWidth()
-  const margin = 20
-  let y = margin
 
-  // Helper to add page break
-  const checkPage = (needed: number) => {
-    if (y + needed > doc.internal.pageSize.getHeight() - margin) {
-      doc.addPage()
-      y = margin
-    }
+  const doc = new jsPDF("p", "mm", "a4")
+
+  const container = document.createElement("div")
+
+  container.style.width = "800px"
+  container.style.fontFamily = "Arial, sans-serif"
+  container.style.fontSize = "12px"
+  container.style.padding = "20px"
+
+  let html = `
+    <h1>Processo ${tree.numero}</h1>
+
+    <p><strong>Tipo:</strong> ${tree.tipo}</p>
+    <p><strong>Assunto:</strong> ${tree.assunto}</p>
+    <p><strong>Setor Origem:</strong> ${tree.setorOrigem} - ${tree.setorOrigemNome}</p>
+    <p><strong>Criador:</strong> ${tree.criador}</p>
+    <p><strong>Data:</strong> ${tree.data} ${tree.hora}</p>
+
+    <hr/>
+
+    <h2>Conteúdo do Processo</h2>
+    ${tree.conteudo || "<p>Sem conteúdo</p>"}
+  `
+
+  if (tree.anexos?.length) {
+    html += `
+      <h3>Anexos</h3>
+      <ul>
+        ${tree.anexos.map(a => `<li>${a.nome}</li>`).join("")}
+      </ul>
+    `
   }
 
-  // Header
-  doc.setFontSize(16)
-  doc.setFont("helvetica", "bold")
-  doc.text(`Processo ${tree.numero}`, margin, y)
-  y += 10
+  if (tree.subdocs?.length) {
+    html += `<hr/><h2>Documentos</h2>`
 
-  doc.setFontSize(11)
-  doc.setFont("helvetica", "normal")
-  doc.text(`Tipo: ${tree.tipo}`, margin, y); y += 6
-  doc.text(`Assunto: ${tree.assunto}`, margin, y); y += 6
-  doc.text(`Setor Origem: ${tree.setorOrigem} - ${tree.setorOrigemNome}`, margin, y); y += 6
-  doc.text(`Criador: ${tree.criador}`, margin, y); y += 6
-  doc.text(`Data: ${tree.data} ${tree.hora}`, margin, y); y += 10
-
-  // Process content
-  if (tree.conteudo) {
-    checkPage(20)
-    doc.setFont("helvetica", "bold")
-    doc.text("Conteudo do Processo:", margin, y); y += 7
-    doc.setFont("helvetica", "normal")
-    const lines = doc.splitTextToSize(tree.conteudo, pageWidth - margin * 2)
-    for (const line of lines) {
-      checkPage(7)
-      doc.text(line, margin, y); y += 6
-    }
-    y += 5
-  }
-
-  // Anexos do processo
-  if (tree.anexos.length > 0) {
-    checkPage(15)
-    doc.setFont("helvetica", "bold")
-    doc.text(`Anexos (${tree.anexos.length}):`, margin, y); y += 7
-    doc.setFont("helvetica", "normal")
-    for (const anexo of tree.anexos) {
-      checkPage(7)
-      doc.text(`- ${anexo.nome}`, margin + 5, y); y += 6
-    }
-    y += 5
-  }
-
-  // Subdocs
-  if (tree.subdocs.length > 0) {
     for (const subdoc of tree.subdocs) {
-      checkPage(30)
-      doc.setDrawColor(200)
-      doc.line(margin, y, pageWidth - margin, y); y += 8
+      html += `
+        <div style="margin-top:30px;">
+          <h3>${subdoc.codigo || subdoc.numero || subdoc.id}</h3>
 
-      doc.setFont("helvetica", "bold")
-      doc.setFontSize(12)
-      doc.text(`Documento: ${subdoc.numero || subdoc.codigo || subdoc.id}`, margin, y); y += 7
+          <p>
+            <strong>Setor:</strong> ${subdoc.setorOrigem}<br/>
+            <strong>Criador:</strong> ${subdoc.criador}<br/>
+            <strong>Data:</strong> ${subdoc.data} ${subdoc.hora}
+          </p>
 
-      doc.setFontSize(11)
-      doc.setFont("helvetica", "normal")
-      doc.text(`Setor: ${subdoc.setorOrigem} | Criador: ${subdoc.criador}`, margin, y); y += 6
-      doc.text(`Data: ${subdoc.data} ${subdoc.hora}`, margin, y); y += 8
+          ${subdoc.conteudo || "<p>Sem conteúdo</p>"}
+      `
 
-      if (subdoc.conteudo) {
-        const subLines = doc.splitTextToSize(subdoc.conteudo, pageWidth - margin * 2)
-        for (const line of subLines) {
-          checkPage(7)
-          doc.text(line, margin, y); y += 6
-        }
-        y += 4
+      if (subdoc.anexos?.length) {
+        html += `
+          <p><strong>Anexos:</strong></p>
+          <ul>
+            ${subdoc.anexos.map(a => `<li>${a.nome}</li>`).join("")}
+          </ul>
+        `
       }
 
-      if (subdoc.anexos.length > 0) {
-        checkPage(10)
-        doc.setFont("helvetica", "italic")
-        doc.text(`Anexos: ${subdoc.anexos.map(a => a.nome).join(", ")}`, margin + 5, y); y += 6
-        doc.setFont("helvetica", "normal")
+      if (subdoc.assinaturas?.length) {
+        html += `
+          <p><strong>Assinaturas:</strong></p>
+          <ul>
+            ${subdoc.assinaturas.map(a => `<li>${a.signatario}</li>`).join("")}
+          </ul>
+        `
       }
 
-      if (subdoc.assinaturas.length > 0) {
-        checkPage(10)
-        doc.setFont("helvetica", "italic")
-        doc.text(`Assinaturas: ${subdoc.assinaturas.map(a => a.signatario).join(", ")}`, margin + 5, y); y += 6
-        doc.setFont("helvetica", "normal")
-      }
-
-      y += 5
+      html += `</div>`
     }
   }
+
+  container.innerHTML = html
+
+  document.body.appendChild(container)
+
+  await doc.html(container, {
+    margin: [20, 20, 20, 20],
+    autoPaging: "text",
+    html2canvas: {
+      scale: 0.6
+    }
+  })
+
+  document.body.removeChild(container)
 
   doc.save(`Processo_${tree.numero.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`)
 }
@@ -307,7 +297,7 @@ export function ProcessTreeViewer({ processoId, open, onOpenChange }: ProcessTre
     setGeneratingPdf(subdoc.id)
     try {
       await generatePdf(
-        `${subdoc.numero || subdoc.codigo || "Documento"} - ${subdoc.setorOrigem}`,
+        `${subdoc.codigo || subdoc.numero || subdoc.id} - ${subdoc.setorOrigem}`,
         subdoc.conteudo
       )
     } finally {
