@@ -30,60 +30,12 @@ import {
 import { cn } from "@/lib/utils"
 import useSWR from "swr"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import "@react-pdf/renderer"
+import { pdf } from "@react-pdf/renderer"
+import {SimplePdfTemplate,ProcessoPdfTemplate} from "../components/PdfTemplates"
+import { Anexo, ProcessoTree, ProcessTreeViewerProps, SubDoc } from "./types"
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-interface Anexo {
-  id: string
-  nome: string
-}
-
-interface Assinatura {
-  id: string
-  signatario: string
-  data: string
-  hora: string
-  tipo: string
-  arquivo: string
-}
-
-interface SubDoc {
-  id: string
-  numero: string
-  conteudo: string
-  codigo: string
-  data: string
-  hora: string
-  setorOrigem: string
-  criador: string
-  anexos: Anexo[]
-  assinaturas: Assinatura[]
-}
-
-interface ProcessoTree {
-  id: string
-  numero: string
-  tipo: string
-  assunto: string
-  conteudo: string
-  codigo: string
-  data: string
-  hora: string
-  setorOrigem: string
-  setorOrigemNome: string
-  setorDestino: string
-  criador: string
-  anexos: Anexo[]
-  assinaturas: Assinatura[]
-  subdocs: SubDoc[]
-  assuntos: string[]
-}
-
-interface ProcessTreeViewerProps {
-  processoId: string | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
-}
 
 function getFileIcon(nome: string) {
   const ext = nome.split(".").pop()?.toLowerCase()
@@ -112,128 +64,30 @@ function getFileIcon(nome: string) {
   }
 }
 
+// Função auxiliar para baixar o blob
+const downloadBlob = (blob: Blob, filename: string) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 async function generatePdf(title: string, content: string) {
-  const { jsPDF } = await import("jspdf")
-  const doc = new jsPDF()
-  const pageWidth = doc.internal.pageSize.getWidth()
-  const margin = 20
-
-  // Title
-  doc.setFontSize(14)
-  doc.setFont("helvetica", "bold")
-  const titleLines = doc.splitTextToSize(title, pageWidth - margin * 2)
-  doc.text(titleLines, margin, margin + 10)
-
-  // Content
-  doc.setFontSize(11)
-  doc.setFont("helvetica", "normal")
-  const yStart = margin + 10 + titleLines.length * 7 + 10
-  const contentLines = doc.splitTextToSize(content || "Sem conteudo disponivel", pageWidth - margin * 2)
-
-  let y = yStart
-  for (const line of contentLines) {
-    if (y > doc.internal.pageSize.getHeight() - margin) {
-      doc.addPage()
-      y = margin
-    }
-    doc.text(line, margin, y)
-    y += 6
-  }
-
-  doc.save(`${title.replace(/[^a-zA-Z0-9]/g, "_").substring(0, 50)}.pdf`)
+  const doc = <SimplePdfTemplate title={title} content={content} />
+  const blob = await pdf(doc).toBlob()
+  downloadBlob(blob, `${title.replace(/[^a-zA-Z0-9]/g, "_").substring(0, 50)}.pdf`)
 }
 
 async function generateProcessoPdf(tree: ProcessoTree) {
-  const { jsPDF } = await import("jspdf")
-
-  const doc = new jsPDF("p", "mm", "a4")
-
-  const container = document.createElement("div")
-
-  container.style.width = "800px"
-  container.style.fontFamily = "Arial, sans-serif"
-  container.style.fontSize = "12px"
-  container.style.padding = "20px"
-
-  let html = `
-    <h1>Processo ${tree.numero}</h1>
-
-    <p><strong>Tipo:</strong> ${tree.tipo}</p>
-    <p><strong>Assunto:</strong> ${tree.assunto}</p>
-    <p><strong>Setor Origem:</strong> ${tree.setorOrigem} - ${tree.setorOrigemNome}</p>
-    <p><strong>Criador:</strong> ${tree.criador}</p>
-    <p><strong>Data:</strong> ${tree.data} ${tree.hora}</p>
-
-    <hr/>
-
-    <h2>Conteúdo do Processo</h2>
-    ${tree.conteudo || "<p>Sem conteúdo</p>"}
-  `
-
-  if (tree.anexos?.length) {
-    html += `
-      <h3>Anexos</h3>
-      <ul>
-        ${tree.anexos.map(a => `<li>${a.nome}</li>`).join("")}
-      </ul>
-    `
-  }
-
-  if (tree.subdocs?.length) {
-    html += `<hr/><h2>Documentos</h2>`
-
-    for (const subdoc of tree.subdocs) {
-      html += `
-        <div style="margin-top:30px;">
-          <h3>${subdoc.codigo || subdoc.numero || subdoc.id}</h3>
-
-          <p>
-            <strong>Setor:</strong> ${subdoc.setorOrigem}<br/>
-            <strong>Criador:</strong> ${subdoc.criador}<br/>
-            <strong>Data:</strong> ${subdoc.data} ${subdoc.hora}
-          </p>
-
-          ${subdoc.conteudo || "<p>Sem conteúdo</p>"}
-      `
-
-      if (subdoc.anexos?.length) {
-        html += `
-          <p><strong>Anexos:</strong></p>
-          <ul>
-            ${subdoc.anexos.map(a => `<li>${a.nome}</li>`).join("")}
-          </ul>
-        `
-      }
-
-      if (subdoc.assinaturas?.length) {
-        html += `
-          <p><strong>Assinaturas:</strong></p>
-          <ul>
-            ${subdoc.assinaturas.map(a => `<li>${a.signatario}</li>`).join("")}
-          </ul>
-        `
-      }
-
-      html += `</div>`
-    }
-  }
-
-  container.innerHTML = html
-
-  document.body.appendChild(container)
-
-  await doc.html(container, {
-    margin: [20, 20, 20, 20],
-    autoPaging: "text",
-    html2canvas: {
-      scale: 0.6
-    }
-  })
-
-  document.body.removeChild(container)
-
-  doc.save(`Processo_${tree.numero.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`)
+  const doc = <ProcessoPdfTemplate tree={tree} />
+  const blob = await pdf(doc).toBlob()
+  downloadBlob(blob, `Processo_${tree.numero.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`)
 }
+
 
 export function ProcessTreeViewer({ processoId, open, onOpenChange }: ProcessTreeViewerProps) {
   const [expandedDocs, setExpandedDocs] = useState<Set<string>>(new Set())
